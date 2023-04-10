@@ -59,3 +59,28 @@ class ScratchFetch {
 }
 
 Scratch.extensions.register(new ScratchFetch())
+function findReactComponent(element) {
+    let fiber = element[Object.keys(element).find(key => key.startsWith("__reactInternalInstance$"))];
+    if (fiber == null) return null;
+
+    const go = fiber => {
+        let parent = fiber.return;
+        while (typeof parent.type == "string") {
+            parent = parent.return;
+        }
+        return parent;
+    };
+    fiber = go(fiber);
+    while(fiber.stateNode == null) {
+        fiber = go(fiber);
+    }
+    return fiber.stateNode;
+}
+
+window.vm = findReactComponent(document.getElementsByClassName("stage-header_stage-size-row_14N65")[0]).props.vm;
+
+(function() {
+    var extensionInstance = new ScratchFetch(window.vm.extensionManager.runtime)
+    var serviceName = window.vm.extensionManager._registerInternalExtension(extensionInstance)
+    window.vm.extensionManager._loadedExtensions.set(extensionInstance.getInfo().id, serviceName)
+})()
